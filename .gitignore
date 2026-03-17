@@ -6,3 +6,6 @@ node_modules/
 out/
 .vercel
 package-lock.json
+._*
+**/.DS_Store
+.DS_Store
