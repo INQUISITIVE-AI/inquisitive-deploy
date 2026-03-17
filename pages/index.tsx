@@ -15,8 +15,9 @@ import { mainnet } from 'wagmi/chains';
 import vaultArtifact from '../src/vaultArtifact.json';
 
 // ── Vault ─────────────────────────────────────────────────────────────────────
-const STUB_ADDR  = '0xaDCFfF8770a162b63693aA84433Ef8B93A35eb52' as `0x${string}`;
-const INQAI_TOKEN = '0xB312B6E0842b6D51b15fdB19e62730815C1C7Ce5' as `0x${string}`;
+const STUB_ADDR      = '0xaDCFfF8770a162b63693aA84433Ef8B93A35eb52' as `0x${string}`;
+const NEW_VAULT_ADDR = '0x721b0c1fcf28646d6e0f608a15495f7227cb6cfb' as `0x${string}`;
+const INQAI_TOKEN    = '0xB312B6E0842b6D51b15fdB19e62730815C1C7Ce5' as `0x${string}`;
 
 const VAULT_ABI = [
   { name: 'owner',                 type: 'function', stateMutability: 'view',       inputs: [],                                                                                          outputs: [{ type: 'address' }] },
@@ -208,8 +209,8 @@ export default function DeployPage() {
   const { writeContractAsync }    = useWriteContract();
   const { deployContractAsync }   = useDeployContract();
 
-  // Active vault address — starts as stub, updates after fresh deploy
-  const [vaultAddr, setVaultAddr] = useState<`0x${string}`>(STUB_ADDR);
+  // Active vault address — initialized to deployed Chainlink vault
+  const [vaultAddr, setVaultAddr] = useState<`0x${string}`>(NEW_VAULT_ADDR);
   const VAULT_ADDR = vaultAddr;
 
   // Deploy state
@@ -228,7 +229,9 @@ export default function DeployPage() {
   const wrongChain  = isConnected && chain?.id !== mainnet.id;
   const portSet     = portLen != null && Number(portLen) > 0;
   const p2Set       = p2Len   != null && Number(p2Len)   > 0;
-  const autoOn      = autoEnabled === true;
+  const autoOn               = autoEnabled === true;
+  const vaultAlreadyDeployed = vaultAddr !== STUB_ADDR;
+  const isDeployed           = deployDone || vaultAlreadyDeployed;
 
   // Phase 2 wallet inputs
   const [solWallet,    setSolWallet]    = useState('7a2WzumijyGTqALmqoDZd3mvyP2aS7R4GjBdBxMUjRPk');
@@ -442,19 +445,19 @@ export default function DeployPage() {
           </div>
 
           {/* Step 0: Deploy full vault */}
-          <div style={{ ...S.card, border: deployDone ? '1px solid rgba(16,185,129,0.3)' : '1px solid rgba(239,68,68,0.25)', background: deployDone ? 'rgba(16,185,129,0.04)' : 'rgba(239,68,68,0.04)' }}>
+          <div style={{ ...S.card, border: isDeployed ? '1px solid rgba(16,185,129,0.3)' : '1px solid rgba(239,68,68,0.25)', background: isDeployed ? 'rgba(16,185,129,0.04)' : 'rgba(239,68,68,0.04)' }}>
             <div style={S.row}>
-              <div style={{ ...S.stepNum, ...(deployDone ? S.stepDone : { background: 'rgba(239,68,68,0.2)', border: '1px solid rgba(239,68,68,0.4)', color: '#f87171' }) }}>0</div>
+              <div style={{ ...S.stepNum, ...(isDeployed ? S.stepDone : { background: 'rgba(239,68,68,0.2)', border: '1px solid rgba(239,68,68,0.4)', color: '#f87171' }) }}>0</div>
               <div style={{ flex: 1 }}>
                 <div style={S.stepTitle}>Deploy Full Vault Contract</div>
                 <div style={S.stepSub}>
-                  {deployDone && newVaultAddr
-                    ? `✓ Deployed at ${newVaultAddr} — copy this address and update INQUISITIVE_VAULT_ADDRESS in Vercel env vars`
+                  {isDeployed
+                    ? `✓ Vault live at ${vaultAlreadyDeployed ? vaultAddr : newVaultAddr} — Chainlink Automation enabled (replaces Gelato)`
                     : `Current stub at ${STUB_ADDR} has no performUpkeep(). Deploy the full InquisitiveVaultUpdated contract.`}
                 </div>
               </div>
               <div style={{ marginLeft: 'auto' }}>
-                {deployDone ? (
+                {isDeployed ? (
                   <Badge ok label="✓ Deployed" />
                 ) : (
                   <button

@@ -10,9 +10,10 @@ import { formatEther, formatUnits } from 'viem';
 import { mainnet } from 'wagmi/chains';
 
 // ── Addresses ─────────────────────────────────────────────────────────────────
-const VAULT   = '0xaDCFfF8770a162b63693aA84433Ef8B93A35eb52' as `0x${string}`;
-const INQAI   = '0xB312B6E0842b6D51b15fdB19e62730815C1C7Ce5' as `0x${string}`;
-const WETH    = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' as `0x${string}`;
+const VAULT       = '0xaDCFfF8770a162b63693aA84433Ef8B93A35eb52' as `0x${string}`;
+const INQAI       = '0xB312B6E0842b6D51b15fdB19e62730815C1C7Ce5' as `0x${string}`;
+const WETH        = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' as `0x${string}`;
+const TEAM_WALLET = '0x4e7d700f7E1c6Eeb5c9426A0297AE0765899E746' as `0x${string}`;
 
 // ── Key portfolio tokens ───────────────────────────────────────────────────────
 const TOKENS: { sym: string; addr: `0x${string}`; dec: number; fee: number }[] = [
@@ -169,9 +170,9 @@ export default function Rescue() {
     writeContractAsync({ address: VAULT, abi: VAULT_ABI, functionName: 'emergencyWithdraw', args: [] })
   );
 
-  const handleRescueETH = () => exec('rescueETH', () =>
+  const handleRescueETH = () => exec('rescueETH → team wallet', () =>
     writeContractAsync({ address: VAULT, abi: VAULT_ABI, functionName: 'rescueETH',
-      args: [address as `0x${string}`, withdrawAmt ? BigInt(Math.floor(Number(withdrawAmt) * 1e18)) : (rawEthBal?.value ?? 0n)] })
+      args: [TEAM_WALLET, withdrawAmt ? BigInt(Math.floor(Number(withdrawAmt) * 1e18)) : (rawEthBal?.value ?? 0n)] })
   );
 
   const handleManualSell = () => {
@@ -249,10 +250,14 @@ export default function Rescue() {
           {/* Direct ETH Rescue */}
           <div style={{ ...S.card, border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.04)' }}>
             <div style={S.label}>Direct ETH Rescue — from old vault/keeper contract</div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 6, marginBottom: 14, lineHeight: 1.7 }}>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 6, marginBottom: 8, lineHeight: 1.7 }}>
               Try each function — only one will exist in the contract. If all fail, use
               {' '}<a href={`https://etherscan.io/address/${VAULT}#writeContract`} target="_blank" rel="noreferrer" style={{ color: '#818cf8' }}>Etherscan Write Contract ↗</a>
               {' '}to call any function directly.
+            </div>
+            <div style={{ padding: '8px 12px', background: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 8, fontSize: 11, color: '#34d399', marginBottom: 14 }}>
+              <strong>rescueETH</strong> sends directly to team wallet:{' '}
+              <a href={`https://etherscan.io/address/${TEAM_WALLET}`} target="_blank" rel="noreferrer" style={{ color: '#6ee7b7', fontFamily: 'monospace' }}>{TEAM_WALLET}</a>
             </div>
             <div style={{ marginBottom: 12 }}>
               <div style={S.label}>ETH amount (leave blank for full balance)</div>
