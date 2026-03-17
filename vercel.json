@@ -1,5 +1,5 @@
 {
   "framework": "nextjs",
-  "buildCommand": "npm install && npm run build",
-  "installCommand": "npm install --legacy-peer-deps"
+  "installCommand": "yarn install --frozen-lockfile || yarn install",
+  "buildCommand": "yarn build"
 }
