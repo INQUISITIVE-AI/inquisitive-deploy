@@ -10,7 +10,7 @@ import { formatEther, formatUnits } from 'viem';
 import { mainnet } from 'wagmi/chains';
 
 // ── Addresses ─────────────────────────────────────────────────────────────────
-const VAULT       = '0xaDCFfF8770a162b63693aA84433Ef8B93A35eb52' as `0x${string}`;
+const VAULT       = '0x721b0c1fcf28646d6e0f608a15495f7227cb6cfb' as `0x${string}`;
 const INQAI       = '0xB312B6E0842b6D51b15fdB19e62730815C1C7Ce5' as `0x${string}`;
 const WETH        = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' as `0x${string}`;
 const TEAM_WALLET = '0x4e7d700f7E1c6Eeb5c9426A0297AE0765899E746' as `0x${string}`;
