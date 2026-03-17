@@ -42,7 +42,7 @@ const PHASE1: { sym: string; addr: `0x${string}`; fee: number; w: number }[] = [
   { sym: 'ENA',  addr: '0x57e114B691Db790C35207b2e685D4A43181e6061', fee: 3000, w: 195  },
   { sym: 'POL',  addr: '0x455e53CBB86018Ac2B8092FdCd39d8444aFFC3F6', fee: 3000, w: 195  },
   { sym: 'FET',  addr: '0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85', fee: 3000, w: 195  },
-  { sym: 'RNDR', addr: '0x6De037ef9aD2725EB40118Bb1702EBb27e4Aeb24', fee: 3000, w: 195  },
+  { sym: 'RENDER', addr: '0x6De037ef9aD2725EB40118Bb1702EBb27e4Aeb24', fee: 3000, w: 195  },
   { sym: 'LINK', addr: '0x514910771AF9Ca656af840dff83E8264EcF986CA', fee: 3000, w: 195  },
   { sym: 'ONDO', addr: '0xfAbA6f8e4a5E8Ab82F62fe7C39859FA577269BE3', fee: 3000, w: 195  },
   { sym: 'GRT',  addr: '0xc944E90C64B2c07662A292be6244BDf05Cda44a7', fee: 3000, w: 97   },
@@ -509,7 +509,7 @@ export default function DeployPage() {
               <div style={{ ...S.stepNum, ...(portSet || s1 ? S.stepDone : {}) }}>1</div>
               <div>
                 <div style={S.stepTitle}>Set Portfolio — 32 ETH-mainnet tokens (Uniswap V3)</div>
-                <div style={S.stepSub}>BTC(WBTC), ETH(stETH), USDC, AAVE, UNI, LDO, ARB, PAXG, INJ, ENA, POL, FET, RNDR, LINK, ONDO, GRT, SKY, STRK, QNT, ZRO, CHZ, ACH, DBR, XSGD, BRZ, JPYC, TAO, NEAR, ATOM, XCN, SOIL, NGN</div>
+                <div style={S.stepSub}>BTC(WBTC), ETH(stETH), USDC, AAVE, UNI, LDO, ARB, PAXG, INJ, ENA, POL, FET, RENDER, LINK, ONDO, GRT, SKY, STRK, QNT, ZRO, CHZ, ACH, DBR, XSGD, BRZ, JPYC, TAO, NEAR, ATOM, XCN, SOIL, NGN</div>
               </div>
               <div style={{ marginLeft: 'auto' }}>
                 {portSet || s1 ? (
