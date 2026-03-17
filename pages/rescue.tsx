@@ -25,7 +25,7 @@ const TOKENS: { sym: string; addr: `0x${string}`; dec: number; fee: number }[] =
   { sym: 'ARB',   addr: '0xB50721BCf8d664c30412Cfbc6cf7a15145234ad1', dec: 18, fee: 3000 },
   { sym: 'LINK',  addr: '0x514910771AF9Ca656af840dff83E8264EcF986CA', dec: 18, fee: 3000 },
   { sym: 'POL',   addr: '0x455e53CBB86018Ac2B8092FdCd39d8444aFFC3F6', dec: 18, fee: 3000 },
-  { sym: 'RNDR',  addr: '0x6De037ef9aD2725EB40118Bb1702EBb27e4Aeb24', dec: 18, fee: 3000 },
+  { sym: 'RENDER',addr: '0x6De037ef9aD2725EB40118Bb1702EBb27e4Aeb24', dec: 18, fee: 3000 },
   { sym: 'INQAI', addr: INQAI,                                         dec: 18, fee: 3000 },
 ];
 
@@ -37,7 +37,10 @@ const VAULT_ABI = [
   { name: 'getPosition',    type: 'function', stateMutability: 'view',       inputs: [{ name: 'token', type: 'address' }],                                                                                                                  outputs: [{ type: 'uint256' }] },
   { name: 'sellAsset',      type: 'function', stateMutability: 'nonpayable', inputs: [{ name: 'tokenIn', type: 'address' }, { name: 'amountIn', type: 'uint256' }, { name: 'minEthOut', type: 'uint256' }, { name: 'poolFee', type: 'uint24' }, { name: 'signalLabel', type: 'string' }], outputs: [] },
   { name: 'withdrawLend',   type: 'function', stateMutability: 'nonpayable', inputs: [{ name: 'asset', type: 'address' }, { name: 'amount', type: 'uint256' }],                                                                            outputs: [] },
-  { name: 'collectFees',    type: 'function', stateMutability: 'nonpayable', inputs: [{ name: 'token', type: 'address' }, { name: 'amount', type: 'uint256' }],                                                                            outputs: [] },
+  { name: 'collectFees',      type: 'function', stateMutability: 'nonpayable', inputs: [{ name: 'token', type: 'address' }, { name: 'amount', type: 'uint256' }], outputs: [] },
+  { name: 'withdrawETH',      type: 'function', stateMutability: 'nonpayable', inputs: [{ name: 'amount', type: 'uint256' }], outputs: [] },
+  { name: 'emergencyWithdraw',type: 'function', stateMutability: 'nonpayable', inputs: [], outputs: [] },
+  { name: 'rescueETH',        type: 'function', stateMutability: 'nonpayable', inputs: [{ name: 'to', type: 'address' }, { name: 'amount', type: 'uint256' }], outputs: [] },
 ] as const;
 
 const ERC20_ABI = [
@@ -154,6 +157,23 @@ export default function Rescue() {
       args: [token, BigInt('115792089237316195423570985008687907853269984665640564039457584007913129639935')] })
   );
 
+  const [withdrawAmt, setWithdrawAmt] = useState('');
+  const [gelatoAmt,   setGelatoAmt]   = useState('');
+
+  const handleWithdrawETH = () => exec('withdrawETH', () =>
+    writeContractAsync({ address: VAULT, abi: VAULT_ABI, functionName: 'withdrawETH',
+      args: [withdrawAmt ? BigInt(Math.floor(Number(withdrawAmt) * 1e18)) : (rawEthBal?.value ?? 0n)] })
+  );
+
+  const handleEmergencyWithdraw = () => exec('emergencyWithdraw', () =>
+    writeContractAsync({ address: VAULT, abi: VAULT_ABI, functionName: 'emergencyWithdraw', args: [] })
+  );
+
+  const handleRescueETH = () => exec('rescueETH', () =>
+    writeContractAsync({ address: VAULT, abi: VAULT_ABI, functionName: 'rescueETH',
+      args: [address as `0x${string}`, withdrawAmt ? BigInt(Math.floor(Number(withdrawAmt) * 1e18)) : (rawEthBal?.value ?? 0n)] })
+  );
+
   const handleManualSell = () => {
     if (!manualToken || !manualAmt) return;
     exec(`Manual sell`, () =>
@@ -223,6 +243,61 @@ export default function Rescue() {
                 <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>getETHBalance() internal</div>
               </div>
               <button style={{ ...S.btn, ...S.btnGray, cursor: 'pointer', marginLeft: 'auto', alignSelf: 'center', background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }} onClick={() => refetchEth()}>↺</button>
+            </div>
+          </div>
+
+          {/* Direct ETH Rescue */}
+          <div style={{ ...S.card, border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.04)' }}>
+            <div style={S.label}>Direct ETH Rescue — from old vault/keeper contract</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 6, marginBottom: 14, lineHeight: 1.7 }}>
+              Try each function — only one will exist in the contract. If all fail, use
+              {' '}<a href={`https://etherscan.io/address/${VAULT}#writeContract`} target="_blank" rel="noreferrer" style={{ color: '#818cf8' }}>Etherscan Write Contract ↗</a>
+              {' '}to call any function directly.
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <div style={S.label}>ETH amount (leave blank for full balance)</div>
+              <input style={{ ...S.input, width: 220 }} placeholder="0.0 (full balance)" value={withdrawAmt} onChange={e => setWithdrawAmt(e.target.value)} />
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 10 }}>
+              <button style={{ ...S.btn, ...(!isConnected || wrongChain || !isOwner || busy ? S.btnGray : S.btnRed) }}
+                disabled={!isConnected || wrongChain || !isOwner || busy}
+                onClick={handleWithdrawETH}>
+                {busy && label === 'withdrawETH' ? '⏳...' : 'withdrawETH(amount)'}
+              </button>
+              <button style={{ ...S.btn, ...(!isConnected || wrongChain || !isOwner || busy ? S.btnGray : S.btnRed) }}
+                disabled={!isConnected || wrongChain || !isOwner || busy}
+                onClick={handleEmergencyWithdraw}>
+                {busy && label === 'emergencyWithdraw' ? '⏳...' : 'emergencyWithdraw()'}
+              </button>
+              <button style={{ ...S.btn, ...(!isConnected || wrongChain || !isOwner || busy ? S.btnGray : S.btnRed) }}
+                disabled={!isConnected || wrongChain || !isOwner || busy}
+                onClick={handleRescueETH}>
+                {busy && label === 'rescueETH' ? '⏳...' : 'rescueETH(to, amount)'}
+              </button>
+              <a href={`https://etherscan.io/address/${VAULT}#writeContract`} target="_blank" rel="noreferrer"
+                style={{ ...S.btn, background: 'rgba(99,102,241,0.15)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.3)', textDecoration: 'none', display: 'inline-block' }}>
+                Open Etherscan ↗
+              </a>
+            </div>
+          </div>
+
+          {/* Gelato Treasury */}
+          <div style={{ ...S.card, border: '1px solid rgba(251,191,36,0.2)', background: 'rgba(251,191,36,0.03)' }}>
+            <div style={S.label}>Gelato Keeper Treasury — ETH recovery</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 6, marginBottom: 12, lineHeight: 1.7 }}>
+              If you funded a Gelato keeper task with ETH, withdraw it from the Gelato treasury.
+              Go to <a href="https://app.gelato.network" target="_blank" rel="noreferrer" style={{ color: '#fbbf24' }}>app.gelato.network ↗</a>,
+              connect your wallet, find your task, and cancel it to release the ETH balance.
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <a href="https://app.gelato.network" target="_blank" rel="noreferrer"
+                style={{ ...S.btn, background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.3)', textDecoration: 'none', display: 'inline-block' }}>
+                Gelato App ↗
+              </a>
+              <a href={`https://etherscan.io/address/0x3AC05161b76a35c1c28dC99Aa602BfdBA80B5ea7#writeContract`} target="_blank" rel="noreferrer"
+                style={{ ...S.btn, background: 'rgba(99,102,241,0.1)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.2)', textDecoration: 'none', display: 'inline-block' }}>
+                Gelato Treasury Etherscan ↗
+              </a>
             </div>
           </div>
 
