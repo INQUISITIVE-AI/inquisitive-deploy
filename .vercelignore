@@ -1,0 +1,6 @@
+node_modules
+.next
+._*
+**/.DS_Store
+.DS_Store
+out
