@@ -1,4 +1,4 @@
-// TEMPORARY RESCUE PAGE — remove when done
+// Vault Rescue Page — for extracting ETH from old vault
 import { useState } from 'react';
 import Head from 'next/head';
 import {
@@ -199,7 +199,7 @@ export default function Rescue() {
 
           {/* Header */}
           <div style={{ textAlign: 'center', marginBottom: 28 }}>
-            <div style={{ fontSize: 11, color: '#ef4444', fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>TEMPORARY · OWNER ONLY</div>
+            <div style={{ fontSize: 11, color: '#3b82f6', fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>VAULT MANAGEMENT · OWNER ONLY</div>
             <h1 style={{ fontSize: 24, fontWeight: 900, margin: 0 }}>Vault Asset Rescue</h1>
             <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginTop: 6 }}>
               Sell positions → ETH · Withdraw lending · Collect fees<br />
@@ -368,7 +368,7 @@ export default function Rescue() {
 
           {/* Footer */}
           <div style={{ textAlign: 'center', marginTop: 24, fontSize: 10, color: 'rgba(255,255,255,0.15)' }}>
-            Temporary rescue UI · Remove this page when done · {VAULT}
+            Vault Management UI · Old Vault: {VAULT}
           </div>
 
         </div>
